@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <!-- jQuery JS-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <!-- Bootstrap JS-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+  integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+  crossorigin="anonymous"></script>
+
+
+  <meta property="og:title" content="원페이지쇼핑몰" />
+  <meta property="og:description" content="웹서비스" />
+  <meta property="og:image" content="{{ url_for('static', filename='plant.avif') }}" />
+
+  <title>판매글</title>
+</head>
+
+<style>
+  .all {
+
+    height: 1500px;
+    width: 600px;
+    display: block;
+    margin: 40px auto 40px auto;
+
+  }
+
+  .info {
+    margin: 20px 0px 40px 0px;
+
+  }
+
+  .select {
+    width: 78px;
+    margin-left: 450px;
+    margin-top: -50px;
+  }
+
+  .btn {
+    margin-top: 20px;
+    margin-left: 470px;
+  }
+
+  .order {
+    padding: 0px 70px 0px 70px;
+  }
+
+  .list {
+    cursor: pointer;
+
+  }
+
+  #tables {
+    display: none;
+  }
+
+</style>
+
+<script>
+
+  //주문 목록을 누르면 목록이 보이게, 다시 누르면 보이지 않게.
+  let num = 0;
+  function showlist() {
+    num += 1;
+    if (num % 2 == 0) {
+      $("#tables").hide();
+    } else {
+      $("#tables").show();
+    }
+  }
+
+  $(document).ready(function () {
+    $('#rate').html('');
+    get_rate();
+    show_orders();
+  });
+
+//주문하기에 적은 값을 서버에 전달
+  function order() {
+    let name = $('#name').val()
+    let order = $('#order').val();
+    let address = $('#address').val();
+    let number = $('#number').val();
+
+    if (name == ''){
+      alert('이름을 입력해주세요.')
+      $('#name').focus()
+    } else if(order == '수량'){
+      alert('수량을 선택해주세요.')
+      $('#count').focus()
+    }else if(address == ''){
+      alert('주소를 입력해주세요.')
+      $('#address').focus()
+    }else if(number == ''){
+      alert('전화번호를 입력해주세요.')
+      $('#number').focus()
+    }else{
+
+    $.ajax({
+      type:"POST",
+      url:"/order",
+      data: { name_give: name, order_give: order, address_give: address, number_give: number },
+      success:function(response){
+        if(response["result"] == "success"){
+          alert(response["msg"]);
+          window.location.reload();
+        }
+      }
+    })}
+  }
+
+  //환율
+  function get_rate(){
+    $.ajax({
+      type: "GET",
+      url: "https://api.manana.kr/exchange/rate.json",
+      data: {},
+      success: function (response) {
+        let rate = response[1]['rate']
+        let time = response[1]['date']
+        let html = `* 현재 1달러[US]는 <br>&nbsp&nbsp&nbsp${rate}원[KRW]&nbsp&nbsp<a style="font-size: 7px">${time}</a>`
+        $('#rate').append(html);
+      }
+    })
+  }
+
+  //주문목록 보기
+  function show_orders() {
+    $.ajax({
+      type: "GET",
+      url: "/order",
+      data: {},
+      success: function (response) {
+        if(response["result"] == "success"){
+        let orders = response['all_orders']
+        for (let i = 0; i < orders.length; i++) {
+          let name = orders[i]['name'];
+          let order = orders[i]['order'];
+          let address = orders[i]['address'];
+          let number = orders[i]['number'];
+          let temp_html = `<tr>
+                              <th scope="row">${name}</th>
+                              <td>${order}</td>
+                              <td>${address}</td>
+                              <td>${number}</td>
+                          </tr>`
+          $('#orders-box').append(temp_html);
+        }
+        let orders_counts = `<span>${orders.length}</span>`
+        $('#counts').append(orders_counts);
+      }
+      }
+    })
+  }
+
+</script>
+
+<body>
+  <div class="all">
+    <div class="top">
+      <div style="margin-left:150px; padding-top:40px;">
+        <img src="../static/plant.avif" width="300px" height="400px">
+      </div>
+      <div class="info">
+        <p style="text-align: center;"><strong><span
+              style="font-size:29px;">여인초</span></strong>&nbsp&nbsp&nbsp&nbsp12,000원
+          / 개</p>
+        <select class="custom-select select" for="inputGroupSelect01" id="order">
+          <option selected>수량</option>
+          <option value="1">1개&nbsp&nbsp&nbsp:&nbsp24,000원</option>
+          <option value="2">2개&nbsp&nbsp&nbsp:&nbsp24,000원</option>
+          <option value="3">3개&nbsp&nbsp&nbsp:&nbsp36,000원</option>
+          <option value="문의">그 외 (문의)</option>
+        </select>
+        <h7 style="color:blue; margin-left:70px; display:block; margin-top:-20px;" id="rate">
+          * 현재 1달러[US]는 <br>&nbsp&nbsp&nbsp..Roading..원[KRW]
+        </h7>
+        <h6>
+          <span style="font-size:24px; margin-left:20px;">여</span>인초는 열대 지방에서 올라온 식물로서, 빛이 좋을수록 짱짱하고 풍성해집니다.
+          <span style="margin-left:10px;">하</span>지만 빛이 부족한 곳에서도 쉽게 상하지 않고 잘 자라 실내 식물로 많이 놔둡니다.
+          <span style="margin-left:10px;">물</span>은 일주일에서 열흘 사이에 한 번 주면 되어 적은 관리에도 쉽게 키울 수 있습니다.
+        </h6>
+
+      </div>
+
+    </div>
+    <div class="order">
+
+      <div class="input-group input-group-sm mb-3">
+
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="inputGroup-sizing-sm">성함</span>
+        </div>
+
+        <input type="text" id="name" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+      </div>
+
+      <div class="input-group input-group-sm mb-3">
+
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="inputGroup-sizing-sm">주소</span>
+        </div>
+
+        <input type="text" id="address" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+      </div>
+      <div class="input-group input-group-sm mb-3">
+
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="inputGroup-sizing-sm">전화번호</span>
+        </div>
+
+        <input type="text" id="number" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+      </div>
+
+      <button type="button" class="btn btn-primary" onclick="order()">주문하기</button>
+    </div>
+
+    <div class="list" onclick="showlist()">
+      <ul class="list-group" style="margin-left:370px; margin-top:-45px;padding-right:80px">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          주문 목록
+          <span class="badge badge-primary badge-pill" id="counts">
+          </span>
+        </li>
+      </ul>
+    </div>
+    <table class="table" style="margin-top:30px" id="tables">
+      <thead>
+        <tr>
+          <th scope="col">이름</th>
+          <th scope="col">수량</th>
+          <th scope="col">주소</th>
+          <th scope="col">전화번호</th>
+        </tr>
+      </thead>
+      <tbody id="orders-box">
+      </tbody>
+    </table>
+  </div>
+</body>
+
+</html>
