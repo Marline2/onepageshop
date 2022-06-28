@@ -9,7 +9,7 @@
 ![screen_shot](/static/pic.PNG)
 
 index.html과 app.py가 통신합니다.<br/>
-app.py는 입력 정보를 mongoDB에 저장 후, 보여줍니다.<br/><br/>
+app.py는 입력 정보를 mongoDB에 저장 후, 보여줍니다.<br/>
 
 각 성함, 주소, 전화번호, 수량을 선택하거나 적지 않으면 주문을 할 수 없습니다. (경고창) <br/> mongoDB에 있는 데이터수와 그 데이터의 정보를 주문 목록 버튼을 눌러서 확인할 수 있습니다. <br/>환율은 API를 사용했습니다.<br/><br/>
 
